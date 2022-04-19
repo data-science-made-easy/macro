@@ -4,7 +4,7 @@ ui_width  <- 8
 
 # Input xlsx files
 saffier_file_name  <- "xlsx/v16a.xlsx"
-var_code_file_name <- "xlsx/input-output-vars-16a.xlsx"
+var_code_file_name <- "xlsx/input-output-vars-v16a.xlsx"
 
 # Report template
 report_template        <- "report/saffier-report.Rmd"
