@@ -1,0 +1,48 @@
+---
+title: De werking van de Nederlandse economie
+header-includes:
+  - \usepackage{graphicx}
+  - \pagenumbering{gobble}
+  - \renewcommand{\contentsname}{Inhoudsopgave}
+output:
+  pdf_document:
+    number_sections: false
+    keep_md: yes
+    toc: false
+    toc_depth: 3
+    includes:
+      in_header: header.tex
+urlcolor: blue
+params:
+  input_impulse_matrix: NA
+  path_to_figure: NA
+---
+
+# Introductie
+Zonder verstoringen volgt de Nederlandse economie naar verwachting een zogeheten basispad. Dit document gaat voor elk van de getoonde economische variabelen uit van dat basispad. [Cpb.nl/macro](https://cpb.nl/macro) biedt een simulatie waarmee het basispad van bepaalde economische variabelen verstoord kan worden door permanente maar beperkte impulsen toe te dienen. Sectie '[Impulsen](#impulsen)' hieronder toont de gekozen impulsen in tabelvorm. Sectie '[Resultaten](#resultaten)' toont de verwachte gevolgen van deze impulsen over de komende tien jaar. Deze resultaten hebben echter een beperkte nauwkeurigheid en dienen met zorg geïnterpreteerd te worden ([disclaimer](#disclaimer)).
+
+# Impulsen
+De tabel hieronder toont de gegeven impulsen voor bepaalde economische variabelen. De impulsen zijn permanent van aard. Wereldhandel, wereldmarktprijzen en arbeidsaanbod zijn in procenten van hun huidige waarde. De andere variabelen zijn in %-punt bbp.
+
+```{r}
+knitr::kable(params$input_impulse_matrix)
+```
+
+<!-- , format.args = list(decimal.mark = ',', big.mark = "'") -->
+<!-- \newpage -->
+# Resultaten
+De tabel hieronder benadert de verwachte gevolgen van bovenstaande impulsen voor de komende tien jaar. Elke cel beschrijft de relatieve verandering (%) ten opzichte van het basispad. Variabelen 'werkloosheid', 'arbeidsinkomensquote', ... zijn in %-punt [to do]. Jaar 1 van de resultaten valt samen met jaar 1 van de impulsen.
+
+```{r}
+effect <- sum_effects(params$input_impulse_matrix)
+effect_rounded <- round(effect, 2)
+knitr::kable(effect_rounded)
+```
+
+Het figuur hieronder bevat een selectie van bovenstaande resultaatvariabelen.
+
+![](`r params$path_to_figure`){ width=75% }\
+
+
+# Disclaimer
+Dit document dient slechts educatieve doeleinden. Het doel is de lezer inzicht te geven in de werking van de Nederlandse economie. De resultaten zijn een benadering van de verwachte gevolgen van de gegeven impulsen. Deze benadering stoelt op aannames, een econometrisch model en software, welke alledrie onderhevig zijn aan fouten. Aan de resultaten kan dan ook geen enkel recht worden ontleend.
