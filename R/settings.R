@@ -3,8 +3,8 @@ ui_offset <- 0
 ui_width  <- 8
 
 # Input xlsx files
-saffier_file_name  <- "xlsx/v14a_02.xlsx"
-var_code_file_name <- "xlsx/input-output-vars.xlsx"
+saffier_file_name  <- "xlsx/v16a.xlsx"
+var_code_file_name <- "xlsx/input-output-vars-16a.xlsx"
 
 # Report template
 report_template        <- "report/saffier-report.Rmd"
