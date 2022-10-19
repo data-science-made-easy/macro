@@ -2,10 +2,12 @@
 title: De werking van de Nederlandse economie
 header-includes:
   - \usepackage{graphicx}
+  - \usepackage{fontspec}
   - \pagenumbering{gobble}
   - \renewcommand{\contentsname}{Inhoudsopgave}
 output:
   pdf_document:
+    latex_engine: lualatex
     number_sections: false
     keep_md: yes
     toc: false
@@ -17,6 +19,8 @@ params:
   input_impulse_matrix: NA
   path_to_figure: NA
 ---
+\setmainfont{RijksoverheidSansText}
+\hyphenation{Ne-der-land-se}
 
 # Introductie
 Zonder verstoringen volgt de Nederlandse economie naar verwachting een zogeheten basispad. Dit document gaat voor elk van de getoonde economische variabelen uit van dat basispad. [Cpb.nl/macro](https://cpb.nl/macro) biedt een simulatie waarmee het basispad van bepaalde economische variabelen verstoord kan worden door permanente maar beperkte impulsen toe te dienen. Sectie '[Impulsen](#impulsen)' hieronder toont de gekozen impulsen in tabelvorm. Sectie '[Resultaten](#resultaten)' toont de verwachte gevolgen van deze impulsen over de komende tien jaar. Deze resultaten hebben echter een beperkte nauwkeurigheid en dienen met zorg geïnterpreteerd te worden ([disclaimer](#disclaimer)).
