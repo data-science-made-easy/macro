@@ -163,7 +163,7 @@ server <- function(input, output, session) {
 
       # put path in session so we can return path
       shinybusy::show_spinner(spin_id = "spin_fig")
-      session$userData$figure_file_path <- plot(mat, lock = FALSE, y_force_include_zero = TRUE, palette = "cpb, extra", title = "Verwacht effect t.o.v. basispad", x_title = "tijd (jaar)", y_title = y_l_title, footnote = footnote_text, destination_path = file_path, file = file_name, legend_n_per_column = if (ncol(mat) < 10) 3 else 4, x_lim = c(1,11), x_ticks = 1:11, x_at = 0.5 + 1:11, x_lab = 1:10, hash_dir = hash_path, decimal_mark = ".", big_mark = ",", y_lim = if (all(0 == mat[, -1])) c(-1, 1) else NA, y_axis = y_axis, y_r_n_decimals = 2, y_r_title = y_r_title, x_axis_bold_if_zero = is.null(unit_2)) #, type = series_type
+      session$userData$figure_file_path <- nicerplot::nplot(mat, lock = FALSE, y_force_include_zero = TRUE, palette = "cpb, extra", title = "Verwacht effect t.o.v. basispad", x_title = "tijd (jaar)", y_title = y_l_title, footnote = footnote_text, destination_path = file_path, file = file_name, legend_n_per_column = if (ncol(mat) < 10) 3 else 4, x_lim = c(1,11), x_ticks = 1:11, x_at = 0.5 + 1:11, x_lab = 1:10, hash_dir = hash_path, decimal_mark = ".", big_mark = ",", y_lim = if (all(0 == mat[, -1])) c(-1, 1) else NA, y_axis = y_axis, y_r_n_decimals = 2, y_r_title = y_r_title, x_axis_bold_if_zero = is.null(unit_2)) #, type = series_type
       shinybusy::hide_spinner(spin_id = "spin_fig")
 
       output$plot <- renderImage({ # start here so spinner shows

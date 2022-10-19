@@ -29,7 +29,7 @@ ui <- fluidPage(
       # ),
       tabPanel("Impulsen", icon = icon("bolt"),
       fluidRow(
-          column(width = 11, br(),p("Wij veronderstellen dat de economie een zeker basispad volgt. Hieronder kun je het basispad van een of twee economische variabelen verstoren door permanente maar beperkte impulsen toe te dienen. Bij te veel of te grote impulsen tonen we geen resultaten (stoplicht springt op rood).", style = " text-align: justify")),
+          column(width = 11, br(),p("Wij veronderstellen dat de economie een zeker basispad volgt. Hieronder kun je het basispad van één of twee economische variabelen verstoren door permanente maar beperkte impulsen toe te dienen. Bij te veel of te grote impulsen tonen we geen resultaten (stoplicht springt op rood).", style = " text-align: justify")),
           column(width = 1,
             tags$div(id="thermometer", style = "margin-top:10px; height:50px; width:25px;", plotOutput("thermometer"))
           )
@@ -45,7 +45,7 @@ ui <- fluidPage(
       ),
       tabPanel("Resultaattabel", icon = icon("table"),
         br(),
-        p("De tabel hieronder benadert de verwachte gevolgen van de impulsen voor de komende tien jaar. Elke cel beschrijft de verandering in procenten (%) ten opzichte van het basispad in dat jaar (", actionLink("show", "disclaimer", .noWS = "outside"), "). Hieronder kun je de reeksen selecteren die je in je figuur wilt zien.", style = " text-align: justify;", .noWS = c("after-begin", "before-end")),
+        p("De tabel hieronder benadert de verwachte gevolgen van de impulsen voor de komende tien jaar. Elke cel beschrijft de verandering in procenten (%) ten opzichte van het basispad aan het einde van elk jaar (", actionLink("show", "disclaimer", .noWS = "outside"), "). Hieronder kun je de reeksen selecteren die je in je figuur wilt zien.", style = " text-align: justify;", .noWS = c("after-begin", "before-end")),
         DTOutput("effect_table"),
         p("Selecteer reeks(en) voor in je figuur.", style = paste0("color:", col_rose))
       ),
