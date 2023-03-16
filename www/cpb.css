@@ -1,4 +1,27 @@
-* { font-family: "RijksoverheidSansText"; }
+* {
+  font-family: "RijksoverheidSansText";
+}
+
+@font-face {  
+  src: url(fonts/RijksoverheidSansText-Regular_2_0.ttf);
+  font-family: "RijksoverheidSansText";
+}
+@font-face {  
+  src: url(fonts/RijksoverheidSansText-Bold_2_0.ttf);
+  font-family: "RijksoverheidSansText";
+  font-weight: bold;
+}
+@font-face {  
+  src: url(fonts/RijksoverheidSansText-Italic_2_0.ttf);
+  font-family: "RijksoverheidSansText";
+  font-style: italic;
+}
+@font-face {  
+  src: url(fonts/RijksoverheidSansText-BoldItalic_2_0.ttf);
+  font-family: "RijksoverheidSansText";
+  font-weight: bold;
+  font-style: italic;
+}
 
 .fa { /* larger icons */
   font-size: 17px;
@@ -9,7 +32,7 @@
 }
 
 .shiny-input-container>div>select:not(.selectized) {
-  width: auto;
+  width: 46px; /*width of the dropdown boxes */
 }
 
 .shiny-input-container:not(.shiny-input-container-inline) {
@@ -23,6 +46,18 @@ select, option { /*right align values displayed in select*/
 
 .load-container { /*put spinner in center of image*/
   width: 500px !important;
+}
+
+/*.container-fluid {*/
+/*  padding-right: 0px;*//*margin of web page*/
+/*  padding-left: 0px;*/
+/*}*/
+
+td img{ /*we do this to center thermometer*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+
 }
 
 /*.img {

@@ -1,0 +1,1 @@
+afzetprijs van uitvoer (incl. belastingen)

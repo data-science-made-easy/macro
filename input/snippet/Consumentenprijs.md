@@ -1,0 +1,1 @@
+afzetprijs van consumptie van huishoudens (incl. belastingen)

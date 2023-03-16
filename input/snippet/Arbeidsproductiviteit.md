@@ -1,0 +1,1 @@
+toegevoegde waarde per gewerkt uur in marksector

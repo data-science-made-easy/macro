@@ -3,37 +3,41 @@ rgb2hex <- function(r, g, b) rgb(r / 255, g / 255, b / 255)
 get_impulse_matrix <- function(input) {
   impulse_matrix <- get_zero_impulse_matrix()
   for (i in 1:n_inputs) for (j in 1:n_periods) {
-    # print(c(i,j, input[[paste0("jaar_", , "_", j)]]))
     impulse_matrix[i, j] <- as.numeric(input[[paste0("year_", j, "_", i)]]) # order i j counterintuitive
   }
   
   impulse_matrix
 }
 
-sum_effects <- function(impulse_matrix) {
-  mat       <- impulse_effect_list[[1]]
+sum_effects <- function(impulse_matrix, quarter = FALSE, column_selection = NULL) {
+  lst       <- if (quarter) impulse_effect_list$quarter else impulse_effect_list$year
+  mat       <- lst[[1]]
   mat[]     <- 0
-  n_horizon <- ncol(mat) # maximum period on which we observe impact (here 10)
+  n_horizon <- ncol(mat) # maximum period on which we observe impact
   
-  for (i in 1:length(impulse_effect_list)) { # effect on output series for each input parameter
-    effect <- impulse_effect_list[[i]] # effect on output series for input parameter i
+  for (i in 1:length(lst)) { # effect on output series for each input parameter
+    effect <- lst[[i]] # effect on output series for input parameter i
     for (j in seq_along(period)) { # 4 years
       if (0 != impulse_matrix[i, j]) { # do st
-        n                  <- 1 + n_horizon - j # 10, 9, 8, 7
-        mat[, j:n_horizon] <- mat[, j:n_horizon] + effect[, 1:n] * impulse_matrix[i, j]
+        if (quarter) { # quarter data
+          index_first_data_point <- 1 + 4 * (j - 1)
+        } else { # year data
+          index_first_data_point <- j
+        }
+        n_data_points                           <- 1 + n_horizon - index_first_data_point
+        mat[, index_first_data_point:n_horizon] <- mat[, index_first_data_point:n_horizon] + effect[, 1:n_data_points] * impulse_matrix[i, j]
       }
     }
   }
   
-  # to_year_on_year(mat)
-  mat
+  if (is.null(column_selection)) {
+    return(mat)
+  } else {
+    return(mat[, column_selection])
+  }  
 }
 
-to_year_on_year <- function(mat) {
-  result <- cbind(mat[,1],t(diff(t(mat))))
-  colnames(result) <- colnames(mat)
-  result
-}
+# get_zero_effects_matrix <- function() sum_effects(get_zero_impulse_matrix())
 
 get_file_name <- function(mat = input_impulse_matrix, index_impulse_series = NULL, index_result_series = NULL) { # , bar = TRUE
   if (is.null(index_impulse_series)) return("empty-plot")

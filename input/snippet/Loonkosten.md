@@ -1,0 +1,1 @@
+gemiddelde nominale loonkosten van werknemers en zelfstandigen in marktsector

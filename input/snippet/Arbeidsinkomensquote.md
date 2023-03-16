@@ -1,0 +1,1 @@
+aandeel van arbeidsinkomen in marktsector (afwijkingen in %-punt)

@@ -1,15 +1,7 @@
-# Macro-Economische Visualisator (MEV)
+# Macro Economic Visualisator (MEV)
 
-## Bijwerken door CPB'ers
-**Twee xlsx-bestanden in 'input/xlsx/':**
+More information (in Dutch):
 
-- input-output-vars-v16a.xlsx
-- v16a-q.xlsx (met kwartaaldata)
-*Namen in kolom 1 van input-output-vars-v16a.xlsx moéten matchen met namen tabbladen in v16a-q.xlsx*
-
-**Tekstbestanden met uitleg in 'input/html/':**
-
-- wereldhandel.html
-- ...
-- loon-en-inkomstenbelasting.html
-*N.B. De spaties in namen moeten vervangen worden door een koppelteken (-)*
+- a [press release](https://www.cpb.nl/zelf-rekenen-met-cpb-model-saffier)
+- the [tool](https://www.cpb.nl/webtool-van-het-saffier-model) in action
+- a [blog](https://www.cpb.nl/column-spelen-met-saffier) on the webtool

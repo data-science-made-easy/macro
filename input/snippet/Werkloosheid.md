@@ -1,0 +1,1 @@
+aantal werkloze personen als % arbeidsaanbod (afwijkingen in %-punt)

@@ -1,0 +1,1 @@
+publieke schuld; %bbp (afwijkingen in %-punt)

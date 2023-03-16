@@ -1,0 +1,1 @@
+reëel besteedbaar inkomen van huishoudens

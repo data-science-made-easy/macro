@@ -7,14 +7,84 @@ server <- function(input, output, session) {
     "}")
   ))
 
-  observeEvent(input$show, {
+  # Define/show modal 'intro'
+  observeEvent(input$id_intro, {
+    showModal(modalDialog(
+      title = "Introductie",
+      shiny::includeMarkdown(create_if_non_existing(get_snippet_file_name("intro"))),
+      style = "text-align: justify",
+      easyClose = TRUE,
+      footer = tagList(modalButton("Sluiten")),
+      size = "l"
+    ))
+  })
+
+  # Define/show modal 'disclaimer'
+  observeEvent(input$id_disclaimer, {
     showModal(modalDialog(
       title = "Disclaimer",
-      "Deze tool dient slechts educatieve doeleinden. Het doel is de gebruiker inzicht te geven in de werking van de Nederlandse economie. De resultaten zijn een benadering van de verwachte gevolgen van de gegeven impulsen. Het proces om tot deze benadering te komen kan fouten bevatten. Aan de resultaten kan dan ook geen enkel recht worden ontleend.", style = "text-align: justify",
+      shiny::includeMarkdown(create_if_non_existing(get_snippet_file_name("disclaimer"))),
+      style = "text-align: justify",
       easyClose = TRUE,
       footer = tagList(modalButton("Sluiten"))
     ))
   })
+
+  # Define/show modal 'resultaatvariabelen'
+  observeEvent(input$popup_var_effect_id, {
+    showModal(modalDialog(
+      title = "Toelichting variabelen",
+      shiny::includeMarkdown(create_if_non_existing(get_snippet_file_name("resultaatvariabelen"))),
+      style = "text-align: justify",
+      easyClose = TRUE,
+      footer = tagList(modalButton("Sluiten")),
+      size = "l"
+    ))
+  })
+  
+  # Define/show modal if user clicks 'impulse variables' below result table
+  lapply(X = 1:2, FUN = function(i) {
+    observeEvent(input[[paste0("popup_result_impulse_", LETTERS[i])]], {
+      subject <- input_var$name[session$userData$id_nonzero_variable[i]]
+      showModal(modalDialog(
+        title = stringr::str_to_sentence(subject),
+        shiny::includeMarkdown(create_if_non_existing(get_snippet_file_name(subject))),
+        style = "text-align: justify",
+        easyClose = TRUE,
+        footer = tagList(modalButton("Sluiten"))
+      ))
+    })
+  })
+    
+  # Define/show modal 'explanation impulse series'
+  lapply(X = 1:n_inputs, FUN = function(i) {
+    observeEvent(input[[paste0("popup_var_impulse_id_", i)]], {
+      subject <- input_var$name[i]
+      showModal(modalDialog(
+        title = stringr::str_to_sentence(subject),
+        shiny::includeMarkdown(create_if_non_existing(get_snippet_file_name(subject))),
+        style = "text-align: justify",
+        easyClose = TRUE,
+        footer = tagList(modalButton("Sluiten"))
+      ))
+    })
+  })
+  
+  # # Define/show modal 'explanation result series'
+  # lapply(X = 1:n_outputs, FUN = function(i) {
+  #   observeEvent(input[[paste0("popup_var_effect_id_", i)]], {
+  #     subject <- result_param$name[i]
+  #     print(subject)
+  #     print(paste("Gelukt!", i))
+  #     showModal(modalDialog(
+  #       title = stringr::str_to_sentence(subject),
+  #       shiny::includeMarkdown(create_if_non_existing(get_snippet_file_name(subject))),
+  #       style = "text-align: justify",
+  #       easyClose = TRUE,
+  #       footer = tagList(modalButton("Sluiten"))
+  #     ))
+  #   })
+  # })
   
   session$userData$impulse_matrix  <- get_zero_impulse_matrix() # put in session to detect changes implying work to do
   session$userData$selected_series <- 1 # user wants to see this series in figure
@@ -38,7 +108,7 @@ server <- function(input, output, session) {
       Shiny.bindAll(table.table().node());"
     )
   )
-  
+
   observeEvent(lapply(year_input_id, function(val) input[[val]]), {
     abs_impulses <- abs(get_impulse_matrix(input))
 
@@ -70,46 +140,54 @@ server <- function(input, output, session) {
       shinyjs::js$disableTab("Figuur")
       shinyjs::disable("report")
       
-      for (i in 1:n_periods) for (j in 1:n_inputs) {
+      for (j in 1:n_inputs) for (i in 1:n_periods) {
         val <- as.numeric(input[[paste0("year_", i, "_", j)]])
         this_col <- if (0 != val & (0 == violation_index | j == violation_index)) col_rose else "#FFFFFF"
         shinyjs::runjs(paste0("document.getElementById('year_", i, "_", j, "').style.backgroundColor ='", this_col ,"'"))
       }
-      
     } else { # impulses within limit
       shinyjs::js$enableTab("Resultaattabel")
       shinyjs::js$enableTab("Figuur")
       shinyjs::enable("report")
       
-      # reset background color dropdown
-      for (i in 1:n_periods) for (j in 1:n_inputs) {
+      # reset background color dropdown, plus collect impulse id's
+      session$userData$id_nonzero_variable <- NULL
+      for (j in 1:n_inputs) for (i in 1:n_periods) {
         val <- as.numeric(input[[paste0("year_", i, "_", j)]])
-        this_col <- if (0 != val) light_green else "#FFFFFF"
+        if (0 != val) { 
+          this_col   <- light_green
+          session$userData$id_nonzero_variable <- unique(c(session$userData$id_nonzero_variable, j))
+        } else {
+          this_col <- "#FFFFFF"
+        } 
         shinyjs::runjs(paste0("document.getElementById('year_", i, "_", j, "').style.backgroundColor ='", this_col ,"'"))
       }
     }
+
+    session$userData$selected_series <- input$effect_table_rows_selected
+    if (0 == length(session$userData$selected_series)) session$userData$selected_series <- 1
 
     update_traffic_light(violation)
   }, ignoreInit = TRUE)
 
   update_result_table <- function(initialize = FALSE) {
     impulse_matrix <- if (initialize) get_zero_impulse_matrix() else get_impulse_matrix(input)
-    effect <- sum_effects(impulse_matrix) #session$userData$input_impulse_matrix
-    effect_rounded <- round(effect, 2) # round
-    rownames(effect_rounded) <- paste0(rownames(effect_rounded), " (", result_param$unit, ")") # add unit
-    output$effect_table <- DT::renderDataTable(effect_rounded, server = FALSE, options = list(paging = FALSE,
-      initComplete = JS(
-        "function(settings, json) {",
-        "$(this.api().table().header()).css({'background-color': '#8FCAE7', 'color': '#fff'});",
-        "}")
-    ), selection = list('multiple', selected = session$userData$selected_series))
+    effect         <- sum_effects(impulse_matrix, quarter = FALSE, column_selection = result_col_selection)
+    effect_rounded <- round(effect, effect_decimal_places) # round
+    effect_rounded <- add_row_names(effect_rounded)
+
+    output$effect_table <- DT::renderDataTable({DT::datatable(effect_rounded, escape = FALSE, options = list(paging = FALSE), selection = list('multiple', selected = session$userData$selected_series))}, server = FALSE)
+
+    # output$effect_table <- DT::renderDataTable(effect_rounded, server = FALSE, escape = FALSE, options = list(paging = FALSE,
+    #   initComplete = JS(
+    #     "function(settings, json) {",
+    #     "$(this.api().table().header()).css({'background-color': '#8FCAE7', 'color': '#fff'});",
+    #     "}")
+    # ), selection = list('multiple', selected = session$userData$selected_series))
   }
   
   show_figure <- function(index = NULL, initialize = FALSE) {
-    if (!is.null(index)) {
-      file_path <- "./www/generated"
-      hash_path <- "./www/generated/cache"
-      
+    if (!is.null(index)) {      
       # get impulses
       impulse_matrix <- if (initialize) get_zero_impulse_matrix() else get_impulse_matrix(input)
       index_impulse_series <- which(apply(impulse_matrix, 1, function(vec) any(0 != vec)))
@@ -124,9 +202,6 @@ server <- function(input, output, session) {
         footnote_text <- paste0("Impuls(en): ", paste0(input_var$name[index_impulse_series], collapse = ", "))
         if (too_many) footnote_text <- paste(footnote_text, "en meer")
       }
-    
-      # get series type
-      # series_type <- if (input$barLineToggle) "bar--" else "line"
     
       index_order <- sort(index, index.return = T)$ix
       unit        <- result_param$unit[index][index_order]
@@ -147,8 +222,8 @@ server <- function(input, output, session) {
       }
       y_r_title <- if (is.null(unit_2)) NULL else paste0("verandering (", unit_2, ")")
     
-      # Calculate results we want to show
-      mat <- t(sum_effects(impulse_matrix))[, sort(index), drop = FALSE]
+      # Calculate results we want to show; use quarter data
+      mat <- t(sum_effects(impulse_matrix, quarter = TRUE))[, sort(index), drop = FALSE]
 
       # fix series names that show-up on right axis
       if (!is.null(unit_2)) {
@@ -156,14 +231,21 @@ server <- function(input, output, session) {
         colnames(mat)[index_y_r] <- paste(colnames(mat)[index_y_r], "(r-as)")
       }
 
-      # add x-axis
-      mat <- cbind(as.numeric(rownames(mat)), mat) # add years
-      mat[, 1] <- 0.5 + mat[, 1] # fix x-axis so years are periods and not points
-
-
+      # add font if non-existent
+      if (!is.element("RijksoverheidSansText", sysfonts::font_families())) {
+        path_prefix     <- file.path(path_fonts, "RijksoverheidSansText-")
+        rijk_regular    <- paste0(path_prefix, "Regular_2_0.ttf")
+        rijk_italic     <- paste0(path_prefix, "Italic_2_0.ttf")
+        rijk_bold       <- paste0(path_prefix, "Bold_2_0.ttf")
+        rijk_bolditalic <- paste0(path_prefix, "BoldItalic_2_0.ttf")
+        if (file.exists(rijk_regular)) {
+          sysfonts::font_add("RijksoverheidSansText", regular = rijk_regular, bold = rijk_bold, italic = rijk_italic, bolditalic = rijk_bolditalic)
+        } else cat("Warning [MD]: font RijksoverheidSansText not found, e.g.:", rijk_regular, "\n")
+      }
+      
       # put path in session so we can return path
       shinybusy::show_spinner(spin_id = "spin_fig")
-      session$userData$figure_file_path <- nicerplot::nplot(mat, lock = FALSE, y_force_include_zero = TRUE, palette = "cpb, extra", title = "Verwacht effect t.o.v. basispad", x_title = "tijd (jaar)", y_title = y_l_title, footnote = footnote_text, destination_path = file_path, file = file_name, legend_n_per_column = if (ncol(mat) < 10) 3 else 4, x_lim = c(1,11), x_ticks = 1:11, x_at = 0.5 + 1:11, x_lab = 1:10, hash_dir = hash_path, decimal_mark = ".", big_mark = ",", y_lim = if (all(0 == mat[, -1])) c(-1, 1) else NA, y_axis = y_axis, y_r_n_decimals = 2, y_r_title = y_r_title, x_axis_bold_if_zero = is.null(unit_2)) #, type = series_type
+      session$userData$figure_file_path <- nicerplot::nplot(mat, lock = FALSE, y_force_include_zero = TRUE, palette = "cpb, extra", title = fig_title, x_title = x_title, y_title = y_l_title, footnote = footnote_text, destination_path = fig_file_path, file = file_name, legend_n_per_column = if (ncol(mat) < 10) 3 else 4, x_ticks = 0:10, x_at = 0:9 + .5, x_lab = 1:10, hash_dir = fig_file_hash, decimal_mark = ",", big_mark = ".", y_lim = if (all(0 == mat)) c(-1, 1) else NA, y_axis = y_axis, y_r_n_decimals = y_r_n_decimals, y_r_title = y_r_title, x_axis_bold_if_zero = is.null(unit_2))
       shinybusy::hide_spinner(spin_id = "spin_fig")
 
       output$plot <- renderImage({ # start here so spinner shows
@@ -171,9 +253,6 @@ server <- function(input, output, session) {
         list(src = session$userData$figure_file_path, width = 500, contentType = 'image/png', alt = "TODO")
       }, deleteFile = FALSE)
 
-      # If output$plot has not been shown yet, then the create plot above will be skipped (to prevent unnecessary work) but we do need da figa for the report, so:
-      # if (is.null(session$userData$figure_file_path)) session$userData$figure_file_path <- paste0(file.path(file_path, file_name), ".png")
-        
       return(session$userData$figure_file_path) # return figure file path so we can show it in report or on website
 
     } else return(NULL)
@@ -189,6 +268,18 @@ server <- function(input, output, session) {
         # dirty
         update_result_table()
         session$userData$impulse_matrix <- impulse_matrix
+        
+        # show popup for selected impulses below result table
+        txt <- NULL
+        if (length(session$userData$id_nonzero_variable)) {
+          txt <- paste0("Uitleg impact impuls(en): <a id = 'popup_result_impulse_A' href = '#' class = 'action-button'>", input_var$name[session$userData$id_nonzero_variable[1]], "</A>")
+          if (2 == length(session$userData$id_nonzero_variable)) {
+            txt <- paste0(txt, ", <a id = 'popup_result_impulse_B' href = '#' class = 'action-button'>", input_var$name[session$userData$id_nonzero_variable[2]], "</A>")
+          }
+          txt <- paste0(txt, ".")
+        }
+      
+        output$variable_explanation <- renderText({txt})
       }
     } else if ("Figuur" == input$tabs) {
       index <- input$effect_table_rows_selected
@@ -225,68 +316,56 @@ server <- function(input, output, session) {
       session$userData$selected_series <- index # put in session to remember what user selected when showing new result table
       show_figure(index = index, initialize = TRUE)
     }
+    
+    # update help below result table
+    output$variable_explanation <- NULL
   })
   
   output$report <- downloadHandler(
-    filename = paste0("saffier-rapport-", format(Sys.time(), "%Y-%m-%d-%H-%M-%S"), ".pdf"),
+    filename = function() paste0("saffier-rapport-", format(Sys.time(), "%Y-%m-%d-%H-%M-%S", tz = "Europe/Amsterdam"), ".pdf"),
     content = function(file) {
 
-      # Create figure
+      # create figure
       index <- input$effect_table_rows_selected
       if (0 == length(index)) index <- 1
-
       figure_path <- show_figure(index = index)
-      shinybusy::show_spinner(spin_id = "spin_rep")
+      shinybusy::show_spinner(spin_id = "spin_fig")
+      
+      # create dirs for figure for report
       tmp_path <- tempdir()
       tmp_path_www <- file.path(tmp_path, "www")
       tmp_path_www_generated <- file.path(tmp_path_www, "generated")
       dir.create(tmp_path_www_generated, recursive = TRUE, showWarnings = FALSE)
-            
-      file.copy(report_header_tex_file, tmp_path, overwrite = TRUE)
+      
+      # copy report header, text, logo, figure
+      # file.copy(report_header_tex_file, tmp_path, overwrite = TRUE)
       file.copy("www/RO_CP_Logo_Homepage_nl.png", tmp_path_www)
       file.copy(figure_path, tmp_path_www_generated)
-      
       tempReport <- file.path(tmp_path, basename(report_template))
       file.copy(report_template, tempReport, overwrite = TRUE)
 
+      # copy markdown files with explanation
+      dir.create(file.path(tmp_path, snippet_path), recursive = TRUE, showWarnings = FALSE)
+      file.copy(list.files(snippet_path, full.names = TRUE), file.path(tmp_path, snippet_path), overwrite = TRUE)
+      
+      # copy fonts (should use fs::dir_copy)
+      tmp_path_www_fonts <- file.path(tmp_path_www, "fonts")
+      dir.create(tmp_path_www_fonts, recursive = TRUE, showWarnings = FALSE)
+      file.copy(from = list.files(path_fonts, full.names = TRUE), to = tmp_path_www_fonts, overwrite = FALSE)
+      
+      # prepare impulse matrix
+      input_impulse_matrix <- get_impulse_matrix(input)
+      rownames(input_impulse_matrix) <- create_impulse_row_names(input_var, input_impulse_matrix, link = FALSE)
+      
+      # create report
       knitr::opts_chunk$set(echo = FALSE)
-      param <- list(input_impulse_matrix = get_impulse_matrix(input), path_to_figure = figure_path)
+      knitr::opts_knit$set(unnamed.chunk.label = "my_chunk", progress = FALSE, verbose = FALSE)
+      param <- list(input_impulse_matrix = input_impulse_matrix, path_to_figure = figure_path, impulse = input_var$name[session$userData$id_nonzero_variable], effect_decimal_places = effect_decimal_places, result_col_selection = result_col_selection)
       rmarkdown::render(tempReport, output_file = file, params = param)#, envir = new.env(parent = globalenv()))
-      shinybusy::hide_spinner(spin_id = "spin_rep")
+      shinybusy::hide_spinner(spin_id = "spin_fig")
     }
   )
 
   update_traffic_light(violation = FALSE)
   update_result_table(initialize = TRUE)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

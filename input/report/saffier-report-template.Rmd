@@ -1,0 +1,104 @@
+---
+header-includes:
+  - \usepackage{graphicx}
+  - \usepackage{titling}
+  - \usepackage[none]{hyphenat}
+output:
+  pdf_document:
+    latex_engine: lualatex
+    keep_md: yes
+colorlinks: true
+boxlinks: true
+papersize: a4
+fontsize: 12pt
+params:
+  effect_decimal_places: NA
+  impulse: NULL
+  input_impulse_matrix: NA
+  path_to_figure: NA
+  result_col_selection: -1
+---
+\setmainfont[
+  Path           = ./www/fonts/,
+  Extension      = .ttf,
+  BoldFont       = RijksoverheidSansText-Bold_2_0,
+  ItalicFont     = RijksoverheidSansText-Italic_2_0,
+  BoldItalicFont = RijksoverheidSansText-BoldItalic_2_0
+]{RijksoverheidSansText-Regular_2_0}
+\predate{\begin{flushleft}\vspace*{-0.8cm}\large}
+\postdate{\end{flushleft}}
+\pretitle{%
+  \begin{center}
+  \vspace*{-4.8cm}
+  \includegraphics[height=6cm]{./www/RO_CP_Logo_Homepage_nl.png}
+  \vspace*{2cm}
+  \begin{flushleft}\bfseries
+}
+\posttitle{\end{flushleft}\end{center}}
+\hyphenation{Ne-der-land-se}
+\title{\huge De werking van de Nederlandse economie}
+\date{`r format(Sys.time(), paste('%d', month_dutch[as.numeric(format(Sys.time(), '%m'))], '%Y'))`}
+\renewcommand{\contentsname}{Inhoudsopgave}
+\maketitle
+\tableofcontents
+\hyphenation{Ne-der-land-se}
+
+# Introductie
+Zonder verstoringen volgt de Nederlandse economie naar verwachting een zogeheten basispad. Dit document gaat voor elk van de getoonde economische variabelen uit van dat basispad. Met de [webtool](https://www.cpb.nl/webtool-van-het-saffier-model) kunnen de gevolgen van veranderingen van bepaalde economische variabelen gesimuleerd worden door impulsen toe te dienen. Sectie '[Impulsen](#impulsen)' hieronder toont de gekozen impulsen in tabelvorm. Sectie '[Resultaten](#resultaten)' toont de verwachte gevolgen van deze impulsen over de komende tien jaar. Deze resultaten dienen met zorg geïnterpreteerd te worden ([disclaimer](#disclaimer)).
+
+## Achtergrond simulatietool
+```{r, results="asis"}
+cat(suppressWarnings(readLines('./input/snippet/intro.md')), sep = "\n")
+```
+
+
+# Impulsen
+De tabel hieronder toont de gegeven impulsen voor bepaalde economische variabelen. De impulsen zijn permanent van aard.
+
+```{r}
+knitr::kable(params$input_impulse_matrix , format.args = list(decimal.mark = ',', big.mark = "."), "pipe")
+```
+
+## Beschrijving gegeven impulsen
+Deze uitleg hieronder gaat uit van een positieve impuls. De beschreven effecten zijn tegenovergesteld bij een negatieve impuls. 
+
+```{r, results="asis"}
+if (length(params$impulse)) {
+  for (i in seq_along(params$impulse)) {
+    cat("\n###", stringr::str_to_sentence(params$impulse[i]), "\n")
+    cat(suppressWarnings(readLines(get_snippet_file_name(params$impulse[i]))), sep = "\n")
+  }
+} else {
+  cat("Er zijn geen impulsen gegeven.\n")
+}
+```
+
+<!-- \newpage -->
+# Resultaten
+
+## Figuur
+Het volgende figuur toont het verwachte effect van de impulsen op een selectie van variabelen.
+
+<!-- \centering -->
+![](`r params$path_to_figure`){ width=15cm }\
+
+
+## Tabel
+De tabel hieronder benadert de verwachte gevolgen van bovenstaande impulsen voor de komende tien jaar. Elke cel beschrijft de relatieve verandering (%) ten opzichte van het basispad.
+
+```{r}
+effect <- sum_effects(params$input_impulse_matrix, quarter = FALSE, column_selection = result_col_selection)
+effect_rounded <- round(effect, params$effect_decimal_places)
+rownames(effect_rounded) <- paste0(rownames(effect_rounded), " (", result_param$unit, ")") # add unit
+knitr::kable(effect_rounded, format.args = list(decimal.mark = ',', big.mark = "."), "pipe")
+```
+
+## Toelichting resultaatvariabelen
+```{r, results="asis"}
+cat(suppressWarnings(readLines('./input/snippet/resultaatvariabelen.md')), sep = "\n")
+```
+
+# Disclaimer
+```{r, results="asis"}
+cat(suppressWarnings(readLines('./input/snippet/disclaimer.md')), sep = "\n")
+```
