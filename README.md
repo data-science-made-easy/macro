@@ -1,4 +1,4 @@
-# Macro Economic Visualisator (MEV)
+# Macro Economic Visualizer (MEV)
 
 More information (in Dutch):
 
